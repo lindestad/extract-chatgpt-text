@@ -2,8 +2,8 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  width: 300px;
-  height: 200px;
+  width: 500px;
+  height: 400px;
   display: flex;
   justify-content: center;
   align-items: center;

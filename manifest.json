@@ -9,7 +9,7 @@
       "128": "icons/icon-128.png"
     },
     "permissions": ["clipboardWrite", "activeTab", "scripting"],
-    "host_permissions": ["https://chatgpt.com/*"],
+    "host_permissions": ["https://chatgpt.com/*", "https://chat.openai.com/*", "https://*.chatgpt.com/*", "https://*.openai.com/*"],
     "action": {
       "default_popup": "popup/popup.html",
       "default_icon": {
@@ -19,7 +19,7 @@
     },
     "content_scripts": [
       {
-        "matches": ["https://chatgpt.com/*"],
+        "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*", "https://*.chatgpt.com/*", "https://*.openai.com/*"],
         "js": ["content_script.js"]
       }
     ]

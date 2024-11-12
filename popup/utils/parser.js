@@ -23,6 +23,17 @@ export function convertToMarkdown(html) {
     code.replaceWith(`\`${code.textContent}\``);
   });
 
+  // Handle <hr> tags
+  Array.from(tempDiv.querySelectorAll('hr')).forEach(hr => {
+    hr.replaceWith('---\n\n');
+  });
+
+  // Add newlines after <p> blocks
+  Array.from(tempDiv.querySelectorAll('p')).forEach(p => {
+    p.replaceWith(`${p.textContent.trim()}\n\n`);
+  });
+
+
   return tempDiv.textContent.trim();
 }
 
