@@ -1,16 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="popup.css">
+  <title>ChatGPT Converter</title>
 </head>
 <body>
-  <h2>ChatGPT Converter</h2>
-  <label for="format">Select Format:</label>
-  <select id="format">
-    <option value="markdown">Markdown (Obsidian)</option>
-    <option value="latex">LaTeX</option>
-  </select>
-  <button id="copyButton">Copy Text</button>
+  <div class="container">
+    <h1>ChatGPT Converter</h1>
+    <label for="format">Select Format:</label>
+    <select id="format">
+      <option value="markdown">Markdown (Obsidian)</option>
+      <option value="latex">LaTeX</option>
+    </select>
+    <button id="copyButton">Copy Text</button>
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>

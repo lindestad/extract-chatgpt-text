@@ -17,9 +17,6 @@
         "48": "icons/icon-48.png"
       }
     },
-    "background": {
-      "service_worker": "background.js"
-    },
     "content_scripts": [
       {
         "matches": ["https://chatgpt.com/*"],
