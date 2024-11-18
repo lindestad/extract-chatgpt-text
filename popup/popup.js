@@ -13,7 +13,7 @@ buttonIds.forEach(buttonId => {
 
     // Get settings from storage
     const settings = await getSettings();
-
+    const prepend = (settings.includeUserPrompt || !settings.includeLastMessage) ? true : false;
     browser.scripting.executeScript({
       target: { tabId: tab.id },
       func: extractConversationHtml, // Inject this function into the page
@@ -24,13 +24,13 @@ buttonIds.forEach(buttonId => {
         let formattedText;
         switch (format) {
           case 'markdown':
-            formattedText = convertToMarkdown(preProcessedHtml);
+            formattedText = convertToMarkdown(preProcessedHtml, prepend);
             break;
           case 'latex':
-            formattedText = convertToLatex(preProcessedHtml);
+            formattedText = convertToLatex(preProcessedHtml, prepend);
             break;
           default:
-            formattedText = convertToRawText(preProcessedHtml);
+            formattedText = convertToRawText(preProcessedHtml, prepend);
         }
 
         navigator.clipboard.writeText(formattedText)
@@ -128,23 +128,8 @@ function preProcessHtml(html, settings) {
     selectedMessages = Array.from(messages);
   }
 
-  if (!settings.includeLastMessage) {
-    // Prepend each message with the appropriate text
-    const processedMessages = selectedMessages.map(msg => {
-      const role = msg.getAttribute('data-message-author-role');
-      const prefix = role === 'user' ? '<div>User wrote:\n</div>' : '<div>ChatGPT wrote:\n</div>';
-      return prefix + msg.outerHTML;
-    });
-    // Strip trailing newlines from each message
-    const strippedMessages = processedMessages.map(msg => msg.replace(/\n+$/, ''));
-    // Join the selected messages with exactly three newlines between them
-    tempDiv.innerHTML = strippedMessages.join('\n\n\n');
-  } else {
-    const strippedMessages = selectedMessages.map(msg => msg.outerHTML.replace(/\n+$/, ''));
-    tempDiv.innerHTML = strippedMessages.join('\n\n\n');
-  }
-  
-  return tempDiv.innerHTML;
+  // Return the outerHTML of the selected messages
+  return selectedMessages.map(msg => msg.outerHTML).join('');
 }
 
 function extractConversationHtml() {

@@ -1,6 +1,14 @@
-export function convertToRawText(html) {
+export function convertToRawText(html, prepend_role = false) {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
+
+  // Convert <li> to list items
+  Array.from(tempDiv.querySelectorAll('ol, ul')).forEach(list => {
+    Array.from(list.children).forEach((li, index) => {
+      const prefix = list.tagName.toLowerCase() === 'ol' ? `${index + 1}. ` : '• ';
+      li.replaceWith(`${prefix}${li.textContent.trim()}\n`);
+    });
+  });
 
   // Handle <hr> tags
   Array.from(tempDiv.querySelectorAll('hr')).forEach(hr => {
@@ -12,22 +20,25 @@ export function convertToRawText(html) {
     p.replaceWith(`${p.textContent.trim()}\n\n`);
   });
 
-  // Extract and return the raw text content
-  return tempDiv.textContent.trim();
+  // Strip trailing newlines from each message and join them
+  const strippedMessages = Array.from(tempDiv.querySelectorAll('[data-message-author-role]'))
+  .map(node => {
+    let text = node.textContent.trim();
+    if (prepend_role) { // Prefix the role to the text
+      const role = node.getAttribute('data-message-author-role');
+      const prefix = role === 'user' ? 'User wrote:' : 'ChatGPT wrote:'; // Decide prefix based on the role
+      text = `${prefix}\n${text}`; // Prepend the text
+    }
+    return text;
+  });
+ 
+  // Join the selected messages with exactly three newlines between them
+  return strippedMessages.join('\n\n\n');
 }
 
-export function convertToMarkdown(html) {
+export function convertToMarkdown(html, prepend_role = false) {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
-
-  // Convert specific <div> elements to bold text
-  Array.from(tempDiv.querySelectorAll('div')).forEach(div => {
-    if (div.textContent.trim() === 'ChatGPT wrote:') {
-      div.replaceWith(`**ChatGPT wrote:**\n`);
-    } else if (div.textContent.trim() === 'User wrote:') {
-      div.replaceWith(`**User wrote:**\n`);
-    }
-  });
 
   // Convert <strong> or <b> to **bold**
   Array.from(tempDiv.querySelectorAll('strong, b')).forEach(el => {
@@ -35,10 +46,11 @@ export function convertToMarkdown(html) {
   });
 
   // Convert <li> to list items
-  Array.from(tempDiv.querySelectorAll('li')).forEach(li => {
-    const parentTag = li.parentElement.tagName.toLowerCase();
-    const prefix = parentTag === 'ol' ? `${Array.from(li.parentElement.children).indexOf(li) + 1}. ` : '- ';
-    li.replaceWith(`${prefix}${li.textContent.trim()}\n`);
+  Array.from(tempDiv.querySelectorAll('ol, ul')).forEach(list => {
+    Array.from(list.children).forEach((li, index) => {
+      const prefix = list.tagName.toLowerCase() === 'ol' ? `${index + 1}. ` : '- ';
+      li.replaceWith(`${prefix}${li.textContent.trim()}\n`);
+    });
   });
 
   // Convert <h1>, <h2>, <h3>, etc. to Markdown headers
@@ -62,21 +74,25 @@ export function convertToMarkdown(html) {
     p.replaceWith(`${p.textContent.trim()}\n\n`);
   });
 
-  return tempDiv.textContent.trim();
+  // Strip trailing newlines from each message and join them
+  const strippedMessages = Array.from(tempDiv.querySelectorAll('[data-message-author-role]'))
+  .map(node => {
+    let text = node.textContent.trim();
+    if (prepend_role) { // Prefix the role to the text
+      const role = node.getAttribute('data-message-author-role');
+      const prefix = role === 'user' ? '**User wrote:**' : '**ChatGPT wrote:**'; // Decide prefix based on the role
+      text = `${prefix}\n${text}`; // Prepend the text
+    }
+    return text;
+  });
+
+  // Join the selected messages with exactly three newlines between them
+  return strippedMessages.join('\n\n\n');
 }
 
-export function convertToLatex(html) {
+export function convertToLatex(html, prepend_role = false) {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
-
-  // Convert specific <div> elements to bold text
-  Array.from(tempDiv.querySelectorAll('div')).forEach(div => {
-    if (div.textContent.trim() === 'ChatGPT wrote:') {
-      div.replaceWith(`\\textbf{ChatGPT wrote:}\n`);
-    } else if (div.textContent.trim() === 'User wrote:') {
-      div.replaceWith(`\\textbf{User wrote:}\n`);
-    }
-  });
 
   // Convert <strong> or <b> to \textbf{}
   Array.from(tempDiv.querySelectorAll('strong, b')).forEach(el => {
@@ -84,8 +100,13 @@ export function convertToLatex(html) {
   });
 
   // Convert <li> to LaTeX list items
-  Array.from(tempDiv.querySelectorAll('li')).forEach(li => {
-    li.replaceWith(`\\item ${li.textContent}`);
+  Array.from(tempDiv.querySelectorAll('ol, ul')).forEach(list => {
+    const listType = list.tagName.toLowerCase() === 'ol' ? 'enumerate' : 'itemize';
+    const items = Array.from(list.querySelectorAll('li')).map(li => `    \\item ${li.textContent.trim()}`).join('\n');
+    
+    // Replace the entire list with LaTeX formatted list
+    const latexList = `\\begin{${listType}}\n${items}\n\\end{${listType}}`;
+    list.replaceWith(latexList);
   });
 
   // Convert <h1>, <h2>, <h3>, etc. to LaTeX headers
@@ -109,7 +130,20 @@ export function convertToLatex(html) {
     p.replaceWith(`${p.textContent.trim()}\n\n`);
   });
 
-  return tempDiv.textContent.trim();
+  // Strip trailing newlines from each message and join them
+  const strippedMessages = Array.from(tempDiv.querySelectorAll('[data-message-author-role]'))
+  .map(node => {
+    let text = node.textContent.trim();
+    if (prepend_role) { // Prefix the role to the text
+      const role = node.getAttribute('data-message-author-role');
+      const prefix = role === 'user' ? '\\textbf{User wrote:}' : '\\textbf{ChatGPT wrote:}'; // Decide prefix based on the role
+      text = `${prefix}\n${text}`; // Prepend the text
+    }
+    return text;
+  });
+ 
+  // Join the selected messages with exactly three newlines between them
+  return strippedMessages.join('\n\n\n');
 }
 
 function splitConversation(html) {
