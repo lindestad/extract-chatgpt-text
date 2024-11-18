@@ -93,3 +93,19 @@ export function convertToLatex(html) {
 
   return tempDiv.textContent.trim();
 }
+
+function splitConversation(html) {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+
+  const messages = [];
+  const messageElements = tempDiv.querySelectorAll('[data-message-author-role]');
+
+  messageElements.forEach(messageElement => {
+    const role = messageElement.getAttribute('data-message-author-role');
+    const content = messageElement.innerHTML.trim();
+    messages.push({ role, content });
+  });
+
+  return messages;
+}

@@ -9,33 +9,28 @@ const buttonIds = ["textButton", "markdownButton", "latexButton"];
 buttonIds.forEach(buttonId => {
   document.getElementById(buttonId).addEventListener("click", async () => {
     const format = buttonId.replace("Button", "").toLowerCase(); // Get format from button ID
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
 
-    chrome.scripting.executeScript({
+    // Get settings from storage
+    const settings = await getSettings();
+
+    browser.scripting.executeScript({
       target: { tabId: tab.id },
       func: extractConversationHtml, // Inject this function into the page
-    }, (injectionResults) => {
-      if (chrome.runtime.lastError) {
-        console.error('Script injection failed:', chrome.runtime.lastError.message);
-        alert('Could not connect to the page. Make sure you are on the ChatGPT page.');
-        return;
-      }
-
+    }).then((injectionResults) => {
       const [{ result: rawHtml }] = injectionResults; // Get raw HTML from page
       if (rawHtml) {
+        const preProcessedHtml = preProcessHtml(rawHtml, settings);
         let formattedText;
         switch (format) {
           case 'markdown':
-            formattedText = convertToMarkdown(rawHtml);
+            formattedText = convertToMarkdown(preProcessedHtml);
             break;
           case 'latex':
-            formattedText = convertToLatex(rawHtml);
-            break;
-          case 'text':
-            formattedText = convertToRawText(rawHtml)
+            formattedText = convertToLatex(preProcessedHtml);
             break;
           default:
-            console.error('Invalid format:', format);
+            formattedText = convertToRawText(preProcessedHtml);
         }
 
         navigator.clipboard.writeText(formattedText)
@@ -44,6 +39,9 @@ buttonIds.forEach(buttonId => {
       } else {
         alert('Failed to extract conversation text.');
       }
+    }).catch(error => {
+      console.error('Script injection failed:', error);
+      alert('Could not connect to the page. Make sure you are on the ChatGPT page.');
     });
   });
 });
@@ -64,6 +62,65 @@ document.getElementById('moreButton').addEventListener('click', function() {
     moreButton.textContent = 'More ->';
   }
 });
+
+/************************************************************************************************
+ Include last message only and Include user prompt checkboxes
+*************************************************************************************************/
+
+// Load the checkbox states from storage
+document.addEventListener('DOMContentLoaded', () => {
+  const includeLastMessageCheckbox = document.getElementById('includeLastMessageCheckbox');
+  const includeUserPromptCheckbox = document.getElementById('includeUserPromptCheckbox');
+
+  browser.storage.local.get(['includeLastMessage', 'includeUserPrompt']).then((result) => {
+    includeLastMessageCheckbox.checked = result.includeLastMessage || false;
+    includeUserPromptCheckbox.checked = result.includeUserPrompt || false;
+  });
+
+  // Save the checkbox states to storage when changed
+  includeLastMessageCheckbox.addEventListener('change', () => {
+    browser.storage.local.set({ includeLastMessage: includeLastMessageCheckbox.checked });
+  });
+
+  includeUserPromptCheckbox.addEventListener('change', () => {
+    browser.storage.local.set({ includeUserPrompt: includeUserPromptCheckbox.checked });
+  });
+});
+
+/************************************************************************************************
+ Settings and Pre-processing
+*************************************************************************************************/
+
+async function getSettings() {
+  return new Promise((resolve) => {
+    browser.storage.local.get(['includeLastMessage', 'includeUserPrompt']).then((result) => {
+      resolve({
+        includeLastMessage: result.includeLastMessage || false,
+        includeUserPrompt: result.includeUserPrompt || false,
+        // Add other settings here as needed
+      });
+    });
+  });
+}
+
+function preProcessHtml(html, settings) {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+
+  if (settings.includeLastMessage) {
+    const messages = tempDiv.querySelectorAll('[data-message-author-role]');
+    if (messages.length > 0) {
+      tempDiv.innerHTML = messages[messages.length - 1].outerHTML;
+    }
+  }
+
+  if (!settings.includeUserPrompt) {
+    const userMessages = tempDiv.querySelectorAll('[data-message-author-role="user"]');
+    userMessages.forEach(userMessage => userMessage.remove());
+  }
+
+  return tempDiv.innerHTML;
+}
 
 function extractConversationHtml() {
   // Get the relevant HTML from the page
