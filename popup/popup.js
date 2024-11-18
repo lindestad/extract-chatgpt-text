@@ -107,18 +107,44 @@ function preProcessHtml(html, settings) {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
 
-  if (settings.includeLastMessage) {
-    const messages = tempDiv.querySelectorAll('[data-message-author-role]');
-    if (messages.length > 0) {
-      tempDiv.innerHTML = messages[messages.length - 1].outerHTML;
-    }
-  }
-
   if (!settings.includeUserPrompt) {
     const userMessages = tempDiv.querySelectorAll('[data-message-author-role="user"]');
     userMessages.forEach(userMessage => userMessage.remove());
   }
 
+  const messages = tempDiv.querySelectorAll('[data-message-author-role]');
+  let selectedMessages = [];
+
+  if (settings.includeLastMessage) {
+    if (settings.includeUserPrompt && messages.length > 1) {
+      // Include the last two messages
+      selectedMessages = Array.from(messages).slice(-2);
+    } else if (messages.length > 0) {
+      // Include only the last message
+      selectedMessages = [messages[messages.length - 1]];
+    }
+  } else if (messages.length === 2) {
+    // Auto join the elements if there are exactly 2 messages
+    selectedMessages = Array.from(messages);
+  } else if (messages.length > 1) {
+    // Join all messages
+    selectedMessages = Array.from(messages);
+  }
+
+  if (!settings.includeLastMessage || settings.includeUserPrompt) {
+    // Prepend each message with the appropriate text
+    const processedMessages = selectedMessages.map(msg => {
+      const role = msg.getAttribute('data-message-author-role');
+      const prefix = role === 'user' ? '<div>User wrote:\n</div>' : '<div>ChatGPT wrote:\n</div>';
+      return prefix + msg.outerHTML;
+    });
+    // Join the selected messages with a newline between them
+    tempDiv.innerHTML = processedMessages.join('\n');
+  } else {
+    // Join the selected messages with a newline between them
+    tempDiv.innerHTML = selectedMessages.map(msg => msg.outerHTML).join('\n');
+  }
+  
   return tempDiv.innerHTML;
 }
 
@@ -131,7 +157,6 @@ function extractConversationHtml() {
   }
 
   // Combine the innerHTML of all message elements
-  const debugHTML = Array.from(messages);
   const rawHtml = Array.from(messages)
     .map(msg => `<div data-message-author-role="${msg.getAttribute('data-message-author-role')}">${msg.innerHTML}</div>`)
     .join('');
