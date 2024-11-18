@@ -138,11 +138,11 @@ function preProcessHtml(html, settings) {
       const prefix = role === 'user' ? '<div>User wrote:\n</div>' : '<div>ChatGPT wrote:\n</div>';
       return prefix + msg.outerHTML;
     });
-    // Join the selected messages with a newline between them
-    tempDiv.innerHTML = processedMessages.join('\n');
+    // Add whitespace between messages
+    tempDiv.innerHTML = processedMessages.join('\n\n\n');
   } else {
-    // Join the selected messages with a newline between them
-    tempDiv.innerHTML = selectedMessages.map(msg => msg.outerHTML).join('\n');
+    // Add whitespace between messages
+    tempDiv.innerHTML = selectedMessages.map(msg => msg.outerHTML).join('\n\n\n');
   }
   
   return tempDiv.innerHTML;
