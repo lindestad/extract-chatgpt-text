@@ -6,12 +6,12 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f4f4f4;
+  background-color: #171717; /* Updated background color */
 }
 
 .container {
   text-align: center;
-  background: #ffffff;
+  background: #171717;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
@@ -22,18 +22,21 @@ body {
   display: none;
   transition: max-height 0.3s ease; /* Smooth transition for height change */
   overflow: hidden; /* Hide content when collapsed */
+  position: sticky;
+  bottom: 0;
+  left: 0;
 }
 
 h1 {
   font-size: 18px;
   margin-bottom: 10px;
-  color: #333;
+  color: #fbfbfe;
 }
 
 label {
   font-size: 14px;
   margin-right: 10px;
-  color: #555;
+  color: #fbfbfe;
 }
 
 select {
@@ -46,8 +49,8 @@ select {
 }
 
 button {
-  background-color: #007acc;
-  color: white;
+  background-color: #1b1b1b;
+  color: #fbfbfe;
   border: none;
   padding: 10px 20px;
   font-size: 14px;
@@ -57,9 +60,9 @@ button {
 }
 
 button:hover {
-  background-color: #005fa3;
+  background-color: #212121;
 }
 
 button:active {
-  background-color: #004580;
+  background-color: #292929;
 }
