@@ -1,33 +1,68 @@
-import { convertToMarkdown, convertToLatex } from './utils/parser.js';
-import { capitalize } from './utils/helpers.js';
+import { convertToMarkdown, convertToLatex, convertToRawText } from './utils/parser.js';
 
-document.getElementById("copyButton").addEventListener("click", async () => {
-  const format = document.getElementById("format").value; // Get selected format (markdown/latex)
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+/************************************************************************************************
+ Text, Markdown and LaTeX buttons
+*************************************************************************************************/
 
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: extractConversationHtml, // Inject this function into the page
-  }, (injectionResults) => {
-    if (chrome.runtime.lastError) {
-      console.error('Script injection failed:', chrome.runtime.lastError.message);
-      alert('Could not connect to the page. Make sure you are on the ChatGPT page.');
-      return;
-    }
+const buttonIds = ["textButton", "markdownButton", "latexButton"];
 
-    const [{ result: rawHtml }] = injectionResults; // Get raw HTML from page
-    if (rawHtml) {
-      const formattedText = format === 'markdown' 
-        ? convertToMarkdown(rawHtml) 
-        : convertToLatex(rawHtml);
+buttonIds.forEach(buttonId => {
+  document.getElementById(buttonId).addEventListener("click", async () => {
+    const format = buttonId.replace("Button", "").toLowerCase(); // Get format from button ID
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-      navigator.clipboard.writeText(formattedText)
-        .then(() => alert('Text copied to clipboard!'))
-        .catch(err => console.error('Clipboard error:', err));
-    } else {
-      alert('Failed to extract conversation text.');
-    }
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: extractConversationHtml, // Inject this function into the page
+    }, (injectionResults) => {
+      if (chrome.runtime.lastError) {
+        console.error('Script injection failed:', chrome.runtime.lastError.message);
+        alert('Could not connect to the page. Make sure you are on the ChatGPT page.');
+        return;
+      }
+
+      const [{ result: rawHtml }] = injectionResults; // Get raw HTML from page
+      if (rawHtml) {
+        let formattedText;
+        switch (format) {
+          case 'markdown':
+            formattedText = convertToMarkdown(rawHtml);
+            break;
+          case 'latex':
+            formattedText = convertToLatex(rawHtml);
+            break;
+          case 'text':
+            formattedText = convertToRawText(rawHtml)
+            break;
+          default:
+            console.error('Invalid format:', format);
+        }
+
+        navigator.clipboard.writeText(formattedText)
+          .then(() => alert('Text copied to clipboard!'))
+          .catch(err => console.error('Clipboard error:', err));
+      } else {
+        alert('Failed to extract conversation text.');
+      }
+    });
   });
+});
+
+/************************************************************************************************
+ More button
+*************************************************************************************************/
+
+document.getElementById('moreButton').addEventListener('click', function() {
+  const moreOptions = document.getElementById('moreOptions');
+  const moreButton = document.getElementById('moreButton');
+  
+  if (moreOptions.style.display === 'none' || moreOptions.style.display === '') {
+    moreOptions.style.display = 'block';
+    moreButton.textContent = 'Less ->';
+  } else {
+    moreOptions.style.display = 'none';
+    moreButton.textContent = 'More ->';
+  }
 });
 
 function extractConversationHtml() {

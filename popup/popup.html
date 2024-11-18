@@ -5,16 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="popup.css">
   <title>ChatGPT Converter</title>
+  <style>
+    .more-options {
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h1>ChatGPT Converter</h1>
-    <label for="format">Select Format:</label>
-    <select id="format">
-      <option value="markdown">Markdown (Obsidian)</option>
-      <option value="latex">LaTeX</option>
-    </select>
-    <button id="copyButton">Copy Text</button>
+    <button id="textButton">Text</button>
+    <button id="markdownButton">Markdown</button>
+    <button id="latexButton">LaTeX</button>
+    <div id="moreButtonContainer">
+      <button id="moreButton">More -></button>
+    </div>
+    <div class="more-options" id="moreOptions">
+      <!-- Add your additional options here -->
+      <button id="option1Button">Option 1</button>
+      <button id="option2Button">Option 2</button>
+    </div>
   </div>
   <script type="module" src="popup.js"></script>
 </body>

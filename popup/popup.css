@@ -3,7 +3,6 @@ body {
   margin: 0;
   padding: 0;
   width: 500px;
-  height: 400px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -17,6 +16,12 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   width: 90%;
+}
+
+.more-options {
+  display: none;
+  transition: max-height 0.3s ease; /* Smooth transition for height change */
+  overflow: hidden; /* Hide content when collapsed */
 }
 
 h1 {

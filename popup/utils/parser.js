@@ -1,3 +1,11 @@
+export function convertToRawText(html) {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+
+  // Extract and return the raw text content
+  return tempDiv.textContent.trim();
+}
+
 export function convertToMarkdown(html) {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
