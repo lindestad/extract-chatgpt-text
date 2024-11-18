@@ -123,26 +123,25 @@ function preProcessHtml(html, settings) {
       // Include only the last message
       selectedMessages = [messages[messages.length - 1]];
     }
-  } else if (messages.length === 2) {
-    // Auto join the elements if there are exactly 2 messages
-    selectedMessages = Array.from(messages);
   } else if (messages.length > 1) {
     // Join all messages
     selectedMessages = Array.from(messages);
   }
 
-  if (!settings.includeLastMessage || settings.includeUserPrompt) {
+  if (!settings.includeLastMessage) {
     // Prepend each message with the appropriate text
     const processedMessages = selectedMessages.map(msg => {
       const role = msg.getAttribute('data-message-author-role');
       const prefix = role === 'user' ? '<div>User wrote:\n</div>' : '<div>ChatGPT wrote:\n</div>';
       return prefix + msg.outerHTML;
     });
-    // Add whitespace between messages
-    tempDiv.innerHTML = processedMessages.join('\n\n\n');
+    // Strip trailing newlines from each message
+    const strippedMessages = processedMessages.map(msg => msg.replace(/\n+$/, ''));
+    // Join the selected messages with exactly three newlines between them
+    tempDiv.innerHTML = strippedMessages.join('\n\n\n');
   } else {
-    // Add whitespace between messages
-    tempDiv.innerHTML = selectedMessages.map(msg => msg.outerHTML).join('\n\n\n');
+    const strippedMessages = selectedMessages.map(msg => msg.outerHTML.replace(/\n+$/, ''));
+    tempDiv.innerHTML = strippedMessages.join('\n\n\n');
   }
   
   return tempDiv.innerHTML;
