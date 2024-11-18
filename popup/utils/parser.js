@@ -2,6 +2,13 @@ export function convertToRawText(html) {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
 
+  // Convert <li> to list items
+  Array.from(tempDiv.querySelectorAll('li')).forEach(li => {
+    const parentTag = li.parentElement.tagName.toLowerCase();
+    const prefix = parentTag === 'ol' ? `${Array.from(li.parentElement.children).indexOf(li) + 1}. ` : '• ';
+    li.replaceWith(`${prefix}${li.textContent.trim()}\n`);
+  });
+
   // Handle <hr> tags
   Array.from(tempDiv.querySelectorAll('hr')).forEach(hr => {
     hr.replaceWith('\n\n');
