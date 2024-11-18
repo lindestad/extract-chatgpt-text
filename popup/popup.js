@@ -1,4 +1,5 @@
 import { convertToMarkdown, convertToLatex, convertToRawText } from './utils/parser.js';
+import { showBubble } from './utils/bubble.js';
 
 /************************************************************************************************
  Text, Markdown and LaTeX buttons
@@ -7,7 +8,10 @@ import { convertToMarkdown, convertToLatex, convertToRawText } from './utils/par
 const buttonIds = ["textButton", "markdownButton", "latexButton"];
 
 buttonIds.forEach(buttonId => {
-  document.getElementById(buttonId).addEventListener("click", async () => {
+  document.getElementById(buttonId).addEventListener("click", async (event) => {
+    // Ui bubble
+    showBubble('Text copied!', 1500, event.currentTarget);
+
     const format = buttonId.replace("Button", "").toLowerCase(); // Get format from button ID
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
 
@@ -34,14 +38,14 @@ buttonIds.forEach(buttonId => {
         }
 
         navigator.clipboard.writeText(formattedText)
-          .then(() => alert('Text copied to clipboard!'))
+          .then(() => console.log('Text copied to clipboard. Format:', format))
           .catch(err => console.error('Clipboard error:', err));
       } else {
-        alert('Failed to extract conversation text.');
+        console.log('Failed to extract conversation text.');
       }
     }).catch(error => {
       console.error('Script injection failed:', error);
-      alert('Could not connect to the page. Make sure you are on the ChatGPT page.');
+      console.log('Could not connect to the page. Make sure you are on the ChatGPT page.');
     });
   });
 });
