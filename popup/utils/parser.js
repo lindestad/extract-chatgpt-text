@@ -2,13 +2,6 @@ export function convertToRawText(html) {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
 
-  // Convert <li> to list items
-  Array.from(tempDiv.querySelectorAll('li')).forEach(li => {
-    const parentTag = li.parentElement.tagName.toLowerCase();
-    const prefix = parentTag === 'ol' ? `${Array.from(li.parentElement.children).indexOf(li) + 1}. ` : '• ';
-    li.replaceWith(`${prefix}${li.textContent.trim()}\n`);
-  });
-
   // Handle <hr> tags
   Array.from(tempDiv.querySelectorAll('hr')).forEach(hr => {
     hr.replaceWith('\n\n');
@@ -26,6 +19,15 @@ export function convertToRawText(html) {
 export function convertToMarkdown(html) {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
+
+  // Convert specific <div> elements to bold text
+  Array.from(tempDiv.querySelectorAll('div')).forEach(div => {
+    if (div.textContent.trim() === 'ChatGPT wrote:') {
+      div.replaceWith(`**ChatGPT wrote:**\n`);
+    } else if (div.textContent.trim() === 'User wrote:') {
+      div.replaceWith(`**User wrote:**\n`);
+    }
+  });
 
   // Convert <strong> or <b> to **bold**
   Array.from(tempDiv.querySelectorAll('strong, b')).forEach(el => {
@@ -66,6 +68,15 @@ export function convertToMarkdown(html) {
 export function convertToLatex(html) {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
+
+  // Convert specific <div> elements to bold text
+  Array.from(tempDiv.querySelectorAll('div')).forEach(div => {
+    if (div.textContent.trim() === 'ChatGPT wrote:') {
+      div.replaceWith(`\\textbf{ChatGPT wrote:}\n`);
+    } else if (div.textContent.trim() === 'User wrote:') {
+      div.replaceWith(`\\textbf{User wrote:}\n`);
+    }
+  });
 
   // Convert <strong> or <b> to \textbf{}
   Array.from(tempDiv.querySelectorAll('strong, b')).forEach(el => {
